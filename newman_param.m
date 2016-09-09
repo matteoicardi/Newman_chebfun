@@ -40,3 +40,15 @@ L2 = (1-lambda)*L;
 cmax = 50000;  % concentration max
 hour = 3600;
 I_ref  = A*L1*n1*F*cmax/hour;   % applied current  % COMPUTE based on 1C
+
+% % overpotential (Doyle Foller Newman 1993)
+% cs = chebfun(@(cs) cs, [0,1]);
+% U01  = (-4.656 + 88.669*cs.^2 - 401.119*cs.^4 + 342.909*cs.^6 - 462.471*cs.^8 + 433.434*cs.^10) ...
+%        ./(-1 +18.933*cs.^2 - 79.532*cs.^4 + 37.311*cs.^6 - 73.083*cs.^8 + 95.96*cs.^10);
+% U02  = @(cs) cs;
+
+% overpotential (Ramos)
+% U01  = chebfun(@(cs) RT*log(K1*(1-(limit01(cs)))./(limit01(cs)))/F,[-1,2]);
+% U02  = chebfun(@(cs) RT*log(K2*(1-(limit01(cs)))./(limit01(cs)))/F,[-1,2]);
+ U01  = @(y) (RT*log(K1*(y)./(1-y))/F)+1;  % cathode
+ U02  = @(y) (RT*log(K2*(y)./(1-y))/F);  % anode

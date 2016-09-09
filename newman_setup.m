@@ -45,17 +45,6 @@ II = zeros(1,nt);
 SoC = zeros(1,nt);
 SoC2 = zeros(1,nt);
 
-% % overpotential (Doyle Foller Newman 1993)
-% cs = chebfun(@(cs) cs, [0,1]);
-% U01  = (-4.656 + 88.669*cs.^2 - 401.119*cs.^4 + 342.909*cs.^6 - 462.471*cs.^8 + 433.434*cs.^10) ...
-%        ./(-1 +18.933*cs.^2 - 79.532*cs.^4 + 37.311*cs.^6 - 73.083*cs.^8 + 95.96*cs.^10);
-% U02  = @(cs) cs;
-
-% overpotential (Ramos)
-% U01  = chebfun(@(cs) RT*log(K1*(1-(limit01(cs)))./(limit01(cs)))/F,[-1,2]);
-% U02  = chebfun(@(cs) RT*log(K2*(1-(limit01(cs)))./(limit01(cs)))/F,[-1,2]);
- U01  = @(y) -(RT*log(K1*(1-y)./(y))/F)-1;  % cathode
- U02  = @(y) -(RT*log(K2*(1-y)./(y))/F);  % anode
 
 % Butler-Volmer
 % cs_sq = chebfun(@(cs) sqrt((limit01(cs)).*(1-(limit01(cs))))*cmax,[-1 2]);
@@ -67,12 +56,12 @@ ce_sq = @(y) (sqrt(y*cmax));
 %i01 = chebfun2(@(ce,cs) K1*(sqrt((cs).*(1-(cs)).*(ce)))*cmax^1.5,[0 1 0 1]);
 %i02 = chebfun2(@(ce,cs) K2*(sqrt((cs).*(1-(cs)).*(ce)))*cmax^1.5,[0 1 0 1]);
 j1  = @(ce,cs,pe,ps) 3*n1*K1.*cs_sq(cs).*restrict(ce_sq(ce),Om1)...
-    .*sinh(alpha*F*(ps-restrict(pe,Om1)+U01(cs))/RT)/R1;
+    .*sinh(alpha*F*(ps-restrict(pe,Om1)-U01(cs))/RT)/R1;
 j2  = @(ce,cs,pe,ps) 3*n2*K2.*cs_sq(cs).*restrict(ce_sq(ce),Om2)...
-    .*sinh(alpha*F*(ps-restrict(pe,Om2)+U02(cs))/RT)/R2;
+    .*sinh(alpha*F*(ps-restrict(pe,Om2)-U02(cs))/RT)/R2;
 j  = @(ce,cs,pe,ps) ...
-    3*ce_sq(ce).*cs_sq(cs).*(n1*K1*sinh(alpha*F*(ps+U01(cs)-pe)/RT).*IOm1/R1 ...
-    + n2*K2*sinh(alpha*F*(ps+U02(cs)-pe)/RT).*IOm3/R2);
+    3*ce_sq(ce).*cs_sq(cs).*(n1*K1*sinh(alpha*F*(ps-U01(cs)-pe)/RT).*IOm1/R1 ...
+    + n2*K2*sinh(alpha*F*(ps-U02(cs)-pe)/RT).*IOm3/R2);
 
 %% initial conditions.
 ce0=.1;
@@ -84,8 +73,8 @@ Cs2 = chebfun2(@(x,r) cs20, [Om2,Oms2]);
 pe = chebfun(@(x) 0, Om);
 cs1 = chebfun(@(t) feval(Cs1,t,R1)',Om1);
 cs2 = chebfun(@(t) feval(Cs1,t,R2)',Om2);
-ps1 = chebfun(@(x) -U01(mean(cs1)), Om1);
-ps2 = chebfun(@(x) -U02(mean(cs2)), Om2);
+ps1 = chebfun(@(x) U01(mean(cs1)), Om1);
+ps2 = chebfun(@(x) U02(mean(cs2)), Om2);
 % joined functions
 cs = chebfun(@(x) cs1(x).*IOm1(x)+cs2(x).*IOm3(x)+.5*IOm2(x),Om); 
 ps = chebfun(@(x) ps1(x).*IOm1(x)+ps2(x).*IOm3(x),Om); 
@@ -101,14 +90,15 @@ res_ps2=chebmatrix(ps2);
 
 %% Define operators
 pde_ps1 = chebop(Om1);
-pde_ps1.rbc = 'neumann';
+%pde_ps1.rbc = 'neumann';
 pde_ps2 = chebop(Om2);
-pde_ps2.lbc = 'neumann';
+%pde_ps2.lbc = 'neumann';
 
 pde_e = chebop(Om);
 pde_e.bc='neumann';
 pde_pe = chebop(Om);
 pde_pe.bc='neumann';
+pde_pe.bc=@(x,u) [u(L/2)];
 %pde_pe.bc=@(x,pe) pe(0);
 pde_ce = chebop(Om);
 pde_ce.bc='neumann';
