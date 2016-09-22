@@ -19,7 +19,8 @@ newman_setup;
 %% Time loop and update operators accordingly
 i=1;
 while i<=nt
-    newman_timeloop
+    newman_coupled_timeloop
+    %newman_timeloop
 end
 
 %% Plotting examples

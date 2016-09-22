@@ -28,7 +28,7 @@ k = k1*IOm1+ke*IOm2+k2*IOm3;
 kD = kD1*IOm1+kDe*IOm2+kD2*IOm3;
 De = De1*IOm1+Dee*IOm2+De2*IOm3;
 nn = n1*IOm1+ne*IOm2+n2*IOm3;
-
+sigma = sigma1*IOm1+((sigma1+sigma2)*100)*IOm2+sigma2*IOm3;
 
 % % mapping
 % y=chebfun(@(x) atan(x)/pi+1/2,[-inf,inf]);
@@ -89,6 +89,8 @@ res_ps2=chebmatrix(ps2);
 
 
 %% Define operators
+pde = chebop(Om);
+
 pde_ps1 = chebop(Om1);
 %pde_ps1.rbc = 'neumann';
 pde_ps2 = chebop(Om2);
