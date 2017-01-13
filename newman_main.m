@@ -5,6 +5,7 @@
 close all
 clear all
 clc
+clf
 
 %% load parameters
 newman_param_sym;
@@ -19,9 +20,12 @@ newman_setup;
 %% Time loop and update operators accordingly
 i=1;
 while i<=nt
-    newman_coupled_timeloop
+    %newman_coupled_timeloop
+    newman_reduced_timeloop
     %newman_timeloop
+    %diffusion_timeloop
 end
 
 %% Plotting examples
-newman_plot
+%newman_plot
+newman_reduced_plot

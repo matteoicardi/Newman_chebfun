@@ -1,12 +1,12 @@
 
-% Create an interval of the space domain...
+%% Create an interval of the space domain...
 Om = [0 L];
 Om1 = [0 L1];
 Om2 = [L2 L];
 Oms1 = [0 R1];
 Oms2 = [0 R2];
 
-% Construct a chebfun of the space variable on the domain
+%% Construct a chebfun of the space variable on the domain
 x = chebfun(@(x) x, Om);
 x1 = chebfun(@(x) x, Om1);
 x2 = chebfun(@(x) x, Om2);
@@ -46,7 +46,7 @@ SoC = zeros(1,nt);
 SoC2 = zeros(1,nt);
 
 
-% Butler-Volmer
+%% Butler-Volmer
 % cs_sq = chebfun(@(cs) sqrt((limit01(cs)).*(1-(limit01(cs))))*cmax,[-1 2]);
 % ce_sq = chebfun(@(ce) sqrt((limit01(ce))*cmax),[-1 2]);
 cs_sq = @(y) (sqrt(y.*(1-y))*cmax);
@@ -124,7 +124,7 @@ pde_cs2.rbc = @(Cs) diff(Cs);
 %% additional dimension
 v1 = 1/(2*R1)*r1.^2;
 v2 = 1/(2*R2)*r2.^2;
-r=roots(diff(chebfun(@(x) sphbes(0,x),[0 100])));
+r=roots(diff(chebfun(@(x) sphbes(0,x),[0 200])));
 r=r(r>1e-5);
 ef1=chebmatrix(x.^0,Oms1);
 ef2=chebmatrix(x.^0,Oms2);
@@ -139,21 +139,32 @@ end
 ef1(M,:) = chebfun(@(x) 1, Oms1)/sqrt(sum(w1));
 ef2(M,:) = chebfun(@(x) 1, Oms2)/sqrt(sum(w2));
 
-% compute mass and stiffness matrix
+% Modify v to be orthogonal to ef
+for i=1:M
+    v1=v1-sum(w1.*v1.*ef1{i})*ef1{i};
+    v2=v2-sum(w2.*v2.*ef2{i})*ef2{i};
+end
+v1=v1-sum(w1.*v1);
+v2=v2-sum(w2.*v2);
+
+%% compute mass and stiffness matrix
 def1 = diff(ef1);
 def2 = diff(ef2);
 for ind=1:M
     vcoef1(ind) = sum(w1.*v1.*ef1(ind));
     vcoef2(ind) = sum(w2.*v2.*ef2(ind));
-    for kind=1:M
-        dcoef1(ind,kind) = sum(w1.*def1(ind).*def1(kind));
-        dcoef2(ind,kind) = sum(w2.*def2(ind).*def2(kind));
-    end
+%     for kind=1:M
+%         dcoef1(ind,kind) = sum(w1.*def1(ind).*def1(kind));
+%         dcoef2(ind,kind) = sum(w2.*def2(ind).*def2(kind));
+%     end
+    dcoef1(ind,ind) = sum(w1.*def1(ind).*def1(ind));
+    dcoef2(ind,ind) = sum(w2.*def2(ind).*def2(ind));
     ncoef1(ind) = 3*sum(w1.*ef1(ind))/R1;
     ncoef2(ind) = 3*sum(w2.*ef2(ind))/R2;
 end
 dcoef2(dcoef2/norm(dcoef2)<1e-8)=0;
 dcoef1(dcoef1/norm(dcoef1)<1e-8)=0;
+
 
 dtwarn = max(dt*norm(dcoef1*Ds1,'inf'),dt*norm(dcoef2*Ds2,'inf'));
 if (dtwarn>.99)
@@ -161,7 +172,7 @@ if (dtwarn>.99)
     dtwarn
 end
 m1=chebmatrix(r1,Oms1);
-m2=chebmatrix(r1,Oms1);
+m2=chebmatrix(r2,Oms2);
 for i=1:M
     coef1 = sum(w1.*ef1(i)*cs10);
     m1(i,:) = chebfun(@(x) coef1, Om1);

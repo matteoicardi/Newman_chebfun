@@ -12,5 +12,6 @@ Ds=param{6};
 % hold on
 % plot(sum(-chebmatrix(c0')*chebmatrix(dj)),'b')
 % plot(sum(Ds*chebmatrix(m')*chebmatrix(j)),'k')
-y = -Ds*D*y0-chebmatrix(c0')*chebmatrix(dj)+Ds*chebmatrix(m')*chebmatrix(j);
+y = -Ds*D*y0 - chebmatrix(c0')*chebmatrix(dj)/Ds ...
+    + chebmatrix(m')*chebmatrix(j);
 
