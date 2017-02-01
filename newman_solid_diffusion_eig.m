@@ -15,14 +15,16 @@ close all
 
 %% Problem set-up
 % Create an interval of the space domain...
-R = 1;
+R = 5e-6;
 dom = [0 R];
 %...and specify a sampling of the time domain:
-t = 0:.1:10;
+t = 0:3.6e-1:3.6;
 
-Ds=1e-3;
-j = chebfun(@(tt) sin(tt).*.10,[t(1) t(end)]);
-M=50;
+load jj
+Ds=1e-14;
+%j = chebfun(@(tt) 1e-8*sin(2*pi*4*tt/3600),[t(1) t(end)]);
+j = chebfun(jj',dom,'equi');
+M=5;
 
 
 %% Equations
@@ -41,10 +43,11 @@ L.rbc = 'neumann';
 bc.left = 'neumann';
 bc.right = @(t,u) Ds*diff(u)-j(t);
 
-u0 = 1/(2*R)*x.^2*j(0);
-
 % function to transform into homogeneous Neumann
 v = 1/(2*R)*x.^2 - 3*R/10;
+
+u0 = 0.5*x.^0 + v*j(0);
+
 
 %% Eigenfunctions
 % cartesian coordinates
@@ -83,7 +86,7 @@ ncoef = 3*ncoef;
 %dcoef(dcoef/norm(dcoef)<1e-8)=0;
 
 %% Call pde23t to solve the problem.
-opts = pdeset('Eps', 1e-5, 'Ylim', [-3,3]);
+opts = pdeset('Eps', 1e-10, 'Ylim', [-3,3]);
 [t, u] = pde23t(pdefun, t, u0, bc, opts);
 
 

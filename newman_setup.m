@@ -16,10 +16,10 @@ r2 = chebfun(@(x) x, Oms2);
 % rx1 = chebfun2(@(x,r) r, [Om1,Oms1]);
 % xr2 = chebfun2(@(x,r) x, [Om2,Oms2]);
 % rx2 = chebfun2(@(x,r) r, [Om2,Oms2]);
-eps = L*1e-2;  
-% IOm1 = (tanh((lambda*L-x)/eps)/2 +1/2);
-% IOm2 = (tanh((x-lambda*L)/eps)/2 - tanh((x-(1-lambda)*L)/eps)/2);
-% IOm3 = (tanh((x-(1-lambda)*L)/eps)/2+1/2);
+
+% IOm1 = (tanh((lambda*L-x)/eps/L)/2 +1/2);
+% IOm2 = (tanh((x-lambda*L)/eps/L)/2 - tanh((x-(1-lambda)*L)/eps/L)/2);
+% IOm3 = (tanh((x-(1-lambda)*L)/eps/L)/2+1/2);
 IOm1 = heaviside(x).*heaviside(-x+L1);
 IOm2 = heaviside(x-L1).*heaviside(-x+L2);
 IOm3 = heaviside(x-L2).*heaviside(-x+L);
@@ -62,6 +62,13 @@ j2  = @(ce,cs,pe,ps) 3*n2*K2.*cs_sq(cs).*restrict(ce_sq(ce),Om2)...
 j  = @(ce,cs,pe,ps) ...
     3*ce_sq(ce).*cs_sq(cs).*(n1*K1*sinh(alpha*F*(ps-U01(cs)-pe)/RT).*IOm1/R1 ...
     + n2*K2*sinh(alpha*F*(ps-U02(cs)-pe)/RT).*IOm3/R2);
+j1dps  = @(ce,cs,pe,ps) 3*n1*K1.*cs_sq(cs).*restrict(ce_sq(ce),Om1)...
+    .*cosh(alpha*F*(ps-restrict(pe,Om1)-U01(cs))/RT)/R1*alpha*F/RT;
+j2dps  = @(ce,cs,pe,ps) 3*n2*K2.*cs_sq(cs).*restrict(ce_sq(ce),Om2)...
+    .*cosh(alpha*F*(ps-restrict(pe,Om2)-U02(cs))/RT)/R2*alpha*F/RT;
+
+jj1 = 0;
+jj2 = 0;
 
 %% initial conditions.
 ce0=.1;
@@ -76,8 +83,8 @@ cs2 = chebfun(@(t) feval(Cs1,t,R2)',Om2);
 ps1 = chebfun(@(x) U01(mean(cs1)), Om1);
 ps2 = chebfun(@(x) U02(mean(cs2)), Om2);
 % joined functions
-cs = chebfun(@(x) cs1(x).*IOm1(x)+cs2(x).*IOm3(x)+.5*IOm2(x),Om); 
-ps = chebfun(@(x) ps1(x).*IOm1(x)+ps2(x).*IOm3(x),Om); 
+cs = chebfun(@(x) cs1(x).*IOm1(x)+cs2(x).*IOm3(x)+.5*IOm2(x),Om,'splitting','on'); 
+ps = chebfun(@(x) ps1(x).*IOm1(x)+ps2(x).*IOm3(x),Om,'splitting','on'); 
 
 res_ce=chebmatrix(ce);
 res_cs1=chebmatrix(cs1);
@@ -100,7 +107,7 @@ pde_e = chebop(Om);
 pde_e.bc='neumann';
 pde_pe = chebop(Om);
 pde_pe.bc='neumann';
-pde_pe.bc=@(x,u) [u(L/2)];
+pde_pe.bc=@(x,u) [u(L/2)]; % fix reference value for electrolyte potential
 %pde_pe.bc=@(x,pe) pe(0);
 pde_ce = chebop(Om);
 pde_ce.bc='neumann';
@@ -140,10 +147,10 @@ ef1(M,:) = chebfun(@(x) 1, Oms1)/sqrt(sum(w1));
 ef2(M,:) = chebfun(@(x) 1, Oms2)/sqrt(sum(w2));
 
 % Modify v to be orthogonal to ef
-for i=1:M
-    v1=v1-sum(w1.*v1.*ef1{i})*ef1{i};
-    v2=v2-sum(w2.*v2.*ef2{i})*ef2{i};
-end
+%for i=1:M
+%    v1=v1-sum(w1.*v1.*ef1{i})*ef1{i};
+%    v2=v2-sum(w2.*v2.*ef2{i})*ef2{i};
+%end
 v1=v1-sum(w1.*v1);
 v2=v2-sum(w2.*v2);
 

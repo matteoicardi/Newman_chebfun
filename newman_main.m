@@ -7,10 +7,7 @@ clear all
 clc
 clf
 
-%% load parameters
-newman_param_sym;
-
-%% load simulation macroscale parameters (timestep, applied current, etc.)
+%% load simulation parameters
 newman_sim_param;
 
 %% setup all functions, operators, equations, etc.. and initialise
@@ -20,10 +17,10 @@ newman_setup;
 %% Time loop and update operators accordingly
 i=1;
 while i<=nt
-    %newman_coupled_timeloop
-    newman_reduced_timeloop
-    %newman_timeloop
-    %diffusion_timeloop
+    %newman_coupled_timeloop    % coupled newman
+    newman_reduced_timeloop    % only solid equations
+    %newman_timeloop            % full newman
+    %diffusion_timeloop         % only solid diffusion
 end
 
 %% Plotting examples
