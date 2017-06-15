@@ -18,9 +18,9 @@ newman_setup;
 i=1;
 while i<=nt
     %newman_coupled_timeloop    % coupled newman
-    newman_reduced_timeloop    % only solid equations
+    %newman_reduced_timeloop    % only solid equations in half cell
     %newman_timeloop            % full newman
-    %diffusion_timeloop         % only solid diffusion
+    diffusion_timeloop         % only solid diffusion
 end
 
 %% Plotting examples

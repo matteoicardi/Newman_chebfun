@@ -23,11 +23,11 @@ newman_param_sym  % fully symmetric paramters
 %newman_param      % asymmetrical cell
 
 %% Time stepping and discretization
-dt   = hour/10000;
+dt   = hour/100000;
 ttot = hour/1;
-nt   = 120;%floor(ttot/dt);
+nt   = floor(ttot/dt);
 % modes in the additional dimension
-M = 10;
+M = 5;
 
 %% Problem set-up
 % applied current  % I_ref is the 1C rate
